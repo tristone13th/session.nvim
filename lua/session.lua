@@ -88,7 +88,7 @@ function M:load_last_session()
 	end
 end
 
-local function is_restorable(buffer)
+function M:is_restorable(buffer)
 	local buftype = vim.api.nvim_get_option_value("buftype", { buf = buffer })
 	if #buftype == 0 then
 		-- Normal buffer, check if it listed
@@ -101,6 +101,10 @@ local function is_restorable(buffer)
 	elseif buftype == "terminal" then
 		-- we need to save terminal buffer to enable in-nvim session change
 		return true
+	end
+
+	if vim.tbl_contains({ "lazy" }, vim.api.nvim_get_option_value("filetype", { buf = buffer })) then
+		return false
 	end
 
 	if vim.tbl_contains({ "gitcommit" }, vim.api.nvim_get_option_value("filetype", { buf = buffer })) then
@@ -132,7 +136,7 @@ function M:save_current_session()
 
 	-- Remove all non-file and utility buffers because they cannot be saved, also need to remove the buffers not belong to cwd
 	for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
-		if not is_restorable(buffer) then
+		if not M:is_restorable(buffer) then
 			vim.api.nvim_buf_delete(buffer, { force = true })
 		end
 	end
