@@ -11,7 +11,7 @@ local function session_filename_to_dir(filename)
 	local dir = filename:sub(#tostring(sessions_dir) + 2)
 	dir = dir:gsub("++", ":")
 	dir = dir:gsub("__", Path.path.sep)
-	return Path:new(dir)
+	return dir
 end
 
 local function get_last_session_filename()
@@ -22,7 +22,7 @@ local function get_last_session_filename()
 	local most_recent_filename = nil
 	local most_recent_timestamp = 0
 	for _, session_filename in ipairs(scandir.scan_dir(tostring(sessions_dir))) do
-		if session_filename_to_dir(session_filename):is_dir() then
+		if Path:new(session_filename_to_dir(session_filename)):is_dir() then
 			local timestamp = vim.fn.getftime(session_filename)
 			if most_recent_timestamp < timestamp then
 				most_recent_timestamp = timestamp
@@ -41,6 +41,9 @@ local function dir_to_session_filename(dir)
 end
 
 function M:load_session(dir)
+	if type(dir) == "string" then
+		dir = Path:new(dir)
+	end
 	local filename = dir_to_session_filename(dir).filename
 	-- save all files
 	for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
@@ -76,15 +79,10 @@ function M:load_session(dir)
 	end)
 end
 
-function M:load_last_session()
-	-- Don't load session if using neovim to open a single file
-	if vim.fn.argc() ~= 0 then
-		return
-	end
-
+function M:last_session_dir()
 	local last_session = get_last_session_filename()
 	if last_session then
-		self:load_session(session_filename_to_dir(last_session))
+		return session_filename_to_dir(last_session)
 	end
 end
 
