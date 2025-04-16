@@ -48,14 +48,14 @@ function M:load_session(dir)
 	-- save all files
 	for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
 		if vim.api.nvim_get_option_value("modified", { buf = buffer }) then
-			vim.api.nvim_command("silent wall")
+			vim.api.nvim_command("silent! wall")
 		end
 	end
 
 	vim.schedule(function()
 		local has_buffer = false
 		if Path:new(filename):exists() then
-			vim.api.nvim_command("silent source " .. filename)
+			vim.api.nvim_command("silent! source " .. filename)
 			for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
 				if utils:startswith(vim.api.nvim_buf_get_name(buffer), vim.fn.getcwd()) then
 					has_buffer = true
